@@ -57,3 +57,11 @@ test("redacts secrets from links embedded in messages", () => {
   assert.ok(result.findings.some((finding) => finding.signal === "Embedded suspicious link"));
   assert.ok(!JSON.stringify(result).includes(secret));
 });
+
+
+test("flags UPI collect requests as potential debits", () => {
+  const result = analyze("Approve this UPI collect request and enter your PIN to receive a ₹50,000 refund.", "message");
+  assert.equal(result.level, "HIGH");
+  assert.ok(result.findings.some((finding) => finding.signal === "UPI collect/payment request"));
+  assert.ok(result.recommendations.some((item) => item.includes("UPI PIN")));
+});
