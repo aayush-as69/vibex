@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -9,7 +9,9 @@ import {
   ChevronRight,
   Code2,
   Copy,
+  Download,
   ExternalLink,
+  FileUp,
   Fingerprint,
   History,
   Link2,
@@ -139,6 +141,8 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [selectedFinding, setSelectedFinding] = useState(null);
   const [scanStep, setScanStep] = useState("");
+  const [notice, setNotice] = useState("");
+  const fileInputRef = useRef(null);
 
   const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
 
@@ -168,6 +172,8 @@ export default function Home() {
           level: data.result.level,
           time: data.result.checkedAt,
           preview: input.slice(0, 72),
+          input,
+          result: data.result,
         },
         ...items,
       ].slice(0, 6));
@@ -199,21 +205,104 @@ export default function Home() {
     window.scrollTo({ top: document.querySelector(".workspace")?.offsetTop || 0, behavior: "smooth" });
   };
 
+  const handleFileImport = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    const allowed = ["txt", "md", "csv", "json", "js", "jsx", "mjs", "cjs", "py", "html", "css", "log", "yaml", "yml", "env", "sh", "eml"];
+    if (!allowed.includes(extension)) {
+      setError("Choose a supported text file.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 20000) {
+      setError("The selected file is larger than 20 KB.");
+      event.target.value = "";
+      return;
+    }
+    try {
+      const text = await file.text();
+      if (text.length > 5000) throw new Error("This file contains more than 5,000 characters.");
+      const codeExtensions = ["json", "js", "jsx", "mjs", "cjs", "py", "html", "css", "yaml", "yml", "env", "sh"];
+      setTool(codeExtensions.includes(extension) ? "code" : tool);
+      setInput(text);
+      setResult(null);
+      setSelectedFinding(null);
+      setError("");
+      setNotice(file.name + " imported in this browser. The file itself is not uploaded or saved.");
+    } catch (importError) {
+      setError(importError.message || "Unable to read this text file.");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
   const reset = () => {
     setInput("");
     setResult(null);
     setError("");
+    setNotice("");
+    setSelectedFinding(null);
   };
 
   const copyResult = async () => {
     if (!result) return;
     const text = [
-      `VibeX Shield — ${result.level} risk (${result.score}/100)`,
-      ...result.findings.map((f) => `• ${f.signal}: ${f.evidence}`),
+      "VibeX Shield — " + result.level + " risk (" + result.score + "/100)",
+      ...result.findings.map((f) => "• " + f.signal + ": " + f.evidence),
       "",
-      ...result.recommendations.map((r) => `→ ${r}`),
+      ...result.recommendations.map((r) => "→ " + r),
     ].join("\n");
-    await navigator.clipboard?.writeText(text);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard access is unavailable in this browser.");
+      await navigator.clipboard.writeText(text);
+      setNotice("Analysis summary copied to clipboard.");
+    } catch (copyError) {
+      setError(copyError.message || "Unable to copy this report.");
+    }
+  };
+
+  const downloadReport = () => {
+    if (!result) return;
+    const report = [
+      "VibeX Shield — Security Analysis Report",
+      "======================================",
+      "Checked: " + new Date(result.checkedAt).toLocaleString(),
+      "Input type: " + (tools.find((item) => item.id === tool)?.title || tool),
+      "Risk: " + result.level + " (" + result.score + "/100)",
+      "Engine: " + result.engine,
+      "",
+      "SUMMARY",
+      result.summary,
+      "",
+      "FINDINGS",
+      ...(result.findings.length ? result.findings.map((finding, index) => (index + 1) + ". " + finding.signal + " [+" + finding.weight + "]\n   " + finding.evidence) : ["No known warning patterns were matched."]),
+      "",
+      "RECOMMENDATIONS",
+      ...result.recommendations.map((item, index) => (index + 1) + ". " + item),
+      "",
+      "Limitations: Rules-based advisory only. This is not a guarantee of safety.",
+    ].join("\n");
+    const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "vibex-shield-report-" + new Date().toISOString().slice(0, 10) + ".txt";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    setNotice("Report generated without including the submitted payload.");
+  };
+
+  const restoreHistory = (item) => {
+    setTool(item.type);
+    setInput(item.input || item.preview || "");
+    setResult(item.result || null);
+    setSelectedFinding(item.result?.findings?.[0] || null);
+    setError("");
+    setNotice("Restored a previous check from this browser session.");
+    document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -306,6 +395,7 @@ export default function Home() {
 
         <div className="composer">
           <div className="composer-label"><Terminal size={14} /> INPUT PAYLOAD <span>{input.length}/5,000</span></div>
+          <input ref={fileInputRef} className="visually-hidden" type="file" accept=".txt,.md,.csv,.json,.js,.jsx,.mjs,.cjs,.py,.html,.css,.log,.yaml,.yml,.env,.sh,.eml" onChange={handleFileImport} aria-label="Import a text file" />
           <textarea
             maxLength={5000}
             value={input}
@@ -313,7 +403,10 @@ export default function Home() {
             placeholder={active.placeholder}
           />
           <div className="composer-foot">
-            <button className="sample" onClick={loadSample}>Load example</button>
+            <div className="composer-left">
+              <button type="button" className="sample" onClick={loadSample}>Load example</button>
+              <button type="button" className="sample" onClick={() => fileInputRef.current?.click()}><FileUp size={13} /> Import text file</button>
+            </div>
             <div className="composer-right">
               {input && <button type="button" className="reset" onClick={reset}>Clear</button>}
               <button type="button" className="analyze" disabled={loading || !input.trim()} onClick={analyze}>
@@ -322,6 +415,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {notice && <div className="notice" role="status">{notice}</div>}
 
         {error && <div className="error"><AlertTriangle size={17} /><span>{error}</span></div>}
 
@@ -330,7 +424,7 @@ export default function Home() {
             <div className="overview-main">
               <div className="verdict-line">
                 <span className={`risk-badge ${levelTone(result.level)}`}>{result.level} RISK</span>
-                <span className="confidence"><Activity size={12}/> {result.confidence || 0}% confidence</span>
+                <span className="confidence"><Activity size={12}/> {result.findings.length} evidence signals</span>
               </div>
               <h3>{result.summary || "Analysis complete."}</h3>
               <p>Detected {result.findings.length} signal{result.findings.length === 1 ? "" : "s"} across {result.categories?.length || 0} security {result.categories?.length === 1 ? "category" : "categories"}.</p>
@@ -348,7 +442,10 @@ export default function Home() {
             <div className="verdict">
               <div className="verdict-head">
                 <span className="eyebrow">ANALYSIS COMPLETE</span>
-                <button className="icon-btn" onClick={copyResult} title="Copy result"><Copy size={15} /></button>
+                <div className="report-actions">
+                  <button type="button" className="icon-btn" onClick={copyResult} title="Copy summary" aria-label="Copy summary"><Copy size={15} /></button>
+                  <button type="button" className="icon-btn" onClick={downloadReport} title="Download report" aria-label="Download report"><Download size={15} /></button>
+                </div>
               </div>
               <div className="score-ring-wrap">
                 <div className={`score-ring ${levelTone(result.level)}`}>
@@ -364,13 +461,13 @@ export default function Home() {
             </div>
 
             <div className="evidence">
-              <div className="panel-heading"><div><span className="eyebrow">EVIDENCE TRACE</span><h3>Why this was flagged</h3></div><span>{result.findings.length} signal{result.findings.length === 1 ? "" : "s"} · {result.confidence || 0}% confidence</span></div>
+              <div className="panel-heading"><div><span className="eyebrow">EVIDENCE TRACE</span><h3>Why this was flagged</h3></div><span>{result.findings.length} signal{result.findings.length === 1 ? "" : "s"} · {result.categories?.length || 0} categories</span></div>
               {result.findings.length ? result.findings.map((f, index) => (
-                <div className="evidence-card" key={f.signal}>
+                <button type="button" className={`evidence-card ${selectedFinding?.signal === f.signal && selectedFinding?.evidence === f.evidence ? "active" : ""}`} key={f.signal + f.evidence} onClick={() => setSelectedFinding(f)} aria-pressed={selectedFinding?.signal === f.signal && selectedFinding?.evidence === f.evidence}>
                   <div className={`evidence-number ${levelTone(result.level)}`}>{String(index + 1).padStart(2, "0")}</div>
                   <div><b>{f.signal}</b><p>{f.evidence}</p></div>
                   <span className="weight">+{f.weight}</span>
-                </div>
+                </button>
               )) : (
                 <div className="clean-state"><CheckCircle2 size={20} /><div><b>No obvious high-risk pattern detected</b><p>The current rules did not match a known warning signal.</p></div></div>
               )}
@@ -395,7 +492,7 @@ export default function Home() {
           </div>
           <div className="history-grid">
             {history.map((item) => (
-              <button className="history-item" key={item.id} onClick={() => { setTool(item.type); setInput(item.preview); setResult(null); }}>
+              <button type="button" className="history-item" key={item.id} onClick={() => restoreHistory(item)}>
                 <span className={`history-score ${levelTone(item.level)}`}>{item.score}</span>
                 <span><b>{tools.find((x) => x.id === item.type)?.title}</b><small>{item.preview}</small></span>
                 <time>{formatTime(item.time)}</time>
