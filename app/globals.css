@@ -156,3 +156,13 @@ button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid #8
 .auto-note{margin:12px 2px 0;color:#70868d;font-size:13px;line-height:1.6}
 @media(max-width:850px){.auto-grid{grid-template-columns:1fr}.auto-card{min-height:unset}.auto-card p{max-width:60ch}}
 @media(max-width:560px){.auto-suite{padding-top:29px}.auto-card{padding:18px}.auto-card>b{font-size:21px}}
+
+/* Spoken warning controls */
+.voice-warning-tools{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:16px 22px;border-bottom:1px solid #183139;background:#08171d}
+.voice-warning-tools p{margin:5px 0 0;color:#82989f;font-size:14px;line-height:1.5}
+.voice-controls{display:flex;align-items:center;gap:9px}
+.voice-controls select{min-height:42px;padding:8px 11px;border:1px solid #284950;border-radius:9px;background:#061218;color:#dcebed;font:inherit}
+.speak-button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:9px 14px;border:1px solid #34756f;border-radius:9px;background:#0b2729;color:#8bf0df;font:700 14px/1.2 inherit}
+.speak-button:hover{background:#103638;border-color:#6ee7d8}
+.speak-button:focus-visible,.voice-controls select:focus-visible{outline:2px solid #8af4e6;outline-offset:3px}
+@media(max-width:650px){.voice-warning-tools{align-items:stretch;flex-direction:column;padding:16px}.voice-controls{width:100%}.voice-controls select{flex:1}.speak-button{flex:1}}
