@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Sparkles,
   Terminal,
+  Volume2,
   Zap,
 } from "lucide-react";
 
@@ -232,6 +233,7 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [selectedFinding, setSelectedFinding] = useState(null);
   const [scanStep, setScanStep] = useState("");
+  const [speechLanguage, setSpeechLanguage] = useState("en-IN");
   const [notice, setNotice] = useState("");
   const fileInputRef = useRef(null);
 
@@ -358,6 +360,33 @@ export default function Home() {
     } catch (copyError) {
       setError(copyError.message || "Unable to copy this report.");
     }
+  };
+
+  const speakWarning = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !window.SpeechSynthesisUtterance) {
+      setError("Read-aloud is not supported by this browser. You can still read or download the report.");
+      return;
+    }
+
+    const messages = {
+      "en-IN": {
+        HIGH: "Warning. VibeX Shield detected high risk. Do not continue. Do not share your one-time password, UPI PIN, or password. Verify through an official channel you open yourself.",
+        MEDIUM: "Caution. VibeX Shield found warning signs. Pause and verify the sender and destination before paying, clicking, or sharing information.",
+        LOW: "VibeX Shield did not detect a strong warning pattern. This does not guarantee safety. Verify unexpected requests before acting."
+      },
+      "hi-IN": {
+        HIGH: "सावधान। VibeX Shield ने अधिक जोखिम पहचाना है। आगे न बढ़ें। अपना ओटीपी, यूपीआई पिन या पासवर्ड साझा न करें। स्वयं खोले गए आधिकारिक माध्यम से पुष्टि करें।",
+        MEDIUM: "सावधानी रखें। VibeX Shield ने कुछ खतरे के संकेत पाए हैं। पैसे भेजने, लिंक खोलने या जानकारी साझा करने से पहले स्वतंत्र रूप से पुष्टि करें।",
+        LOW: "VibeX Shield को कोई मजबूत खतरे का संकेत नहीं मिला। इसका अर्थ यह नहीं है कि सामग्री पूरी तरह सुरक्षित है। कोई भी कदम उठाने से पहले अनपेक्षित अनुरोध की पुष्टि करें।"
+      }
+    };
+
+    window.speechSynthesis.cancel();
+    const utterance = new window.SpeechSynthesisUtterance(messages[speechLanguage][result.level] || messages[speechLanguage].MEDIUM);
+    utterance.lang = speechLanguage;
+    utterance.rate = 0.94;
+    window.speechSynthesis.speak(utterance);
+    setNotice(speechLanguage === "hi-IN" ? "चेतावनी आपके डिवाइस पर पढ़ी जा रही है।" : "Reading the warning using your device speech engine.");
   };
 
   const downloadReport = () => {
@@ -559,6 +588,16 @@ export default function Home() {
               const count = signalCount(result, category);
               return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: `${Math.min(100, count * 34)}%` }} /></i><em>{count}</em></div>;
             })}
+          </div>
+          <div className="voice-warning-tools">
+            <div><span className="eyebrow">SPOKEN SAFETY WARNING</span><p>Read the result aloud using your device voice.</p></div>
+            <div className="voice-controls">
+              <select aria-label="Warning language" value={speechLanguage} onChange={(event) => setSpeechLanguage(event.target.value)}>
+                <option value="en-IN">English</option>
+                <option value="hi-IN">हिन्दी</option>
+              </select>
+              <button type="button" className="speak-button" onClick={speakWarning}><Volume2 size={16} /> Read warning</button>
+            </div>
           </div>
           <div className="inspection-section"><div className="panel-heading"><div><span className="eyebrow">INPUT FORENSICS</span><h3>What the engine noticed</h3></div><span>Signal-level inspection</span></div><InspectionView input={input} type={tool} findings={result.findings} selectedFinding={selectedFinding} onSelect={setSelectedFinding} /></div>
           <div className="result-panel">
