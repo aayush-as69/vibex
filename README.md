@@ -85,6 +85,20 @@ It gives a user one place to inspect suspicious content, explains the signals th
 </tr>
 </table>
 
+## Automatic protection modules
+
+VibeX Shield now includes three deployable defensive components in addition to the web dashboard:
+
+| Module | Automatic action | Where it runs |
+|---|---|---|
+| Browser Link Guard | Highlights suspicious URLs and interrupts high-risk link clicks with a warning | Chrome / Edge extension |
+| Code Guard | Scans source/config files for high-confidence hard-coded credentials and fails CI when found | Local Node.js + GitHub Actions |
+| Factory Sensor Agent | Checks authenticated sensor readings against configured limits and sudden-change rules | Local factory gateway / edge computer |
+
+Setup, commands, telemetry example and safety boundaries: [Automatic Protection Guide](docs/AUTOMATIC_PROTECTION.md).
+
+The browser module is heuristic and local. The sensor agent reports anomalies; it does not stop machinery or operate a PLC. Voice-clone verification requires a dedicated audio anti-spoof model and native call/audio integration, which are not included in this browser app. The message analyzer flags UPI collect/PIN-to-receive wording and explains the debit risk.
+
 ## How it works
 
 ```mermaid
