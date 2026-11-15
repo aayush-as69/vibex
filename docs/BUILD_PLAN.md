@@ -20,6 +20,10 @@ Track 3: Cyber Safety — protecting citizens, shops and factories from scams. T
 - [x] Session history
 - [x] Responsive judge/demo UI
 - [x] Automated rules-engine tests
+- [x] UPI collect-request and PIN-to-receive detection
+- [x] Chrome/Edge browser link guard with click warning
+- [x] CI secret scanner for high-confidence credential patterns
+- [x] Authenticated factory sensor telemetry agent with threshold and sudden-change alerts
 - [x] Browser-side text-file import (up to 5,000 characters)
 - [x] Complete in-session history restoration
 - [x] Copyable findings and privacy-conscious text report export
@@ -27,6 +31,8 @@ Track 3: Cyber Safety — protecting citizens, shops and factories from scams. T
 
 ## Phase 2 — Real detection engine
 - [ ] URL reputation and redirect analysis through an isolated service
+- [ ] Native mobile UPI/payment-app interception and consent-based call/audio integration
+- [ ] Model-based voice-spoof detection with measured false-positive and false-negative rates
 - [ ] OCR for screenshots of scam messages and QR payment requests
 - [ ] Optional LLM-assisted classification with structured JSON output
 - [ ] Confidence + evidence scoring
@@ -66,3 +72,10 @@ Track 3: Cyber Safety — protecting citizens, shops and factories from scams. T
 
 ## Guardrails
 The product is defensive. It must never automate credential theft, exploit execution, malware delivery or unauthorized access. Detection is advisory; high-impact actions require user confirmation.
+
+## Automatic protection status
+
+- Browser Link Guard is a heuristic extension; its high-risk click warning can be bypassed by the user.
+- Code Guard blocks CI when supported high-confidence secret patterns are found; it does not rotate credentials.
+- Sensor Agent raises telemetry alerts only. It does not control PLCs or safety interlocks.
+- Voice-clone audio authentication and native UPI-app interception are not implemented in this web/extension MVP.
