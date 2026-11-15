@@ -80,6 +80,19 @@ function levelTone(level) {
   return String(level || "LOW").toLowerCase();
 }
 
+function signalCount(result, category) {
+  const groups = {
+    "Social engineering": ["Urgency pressure","Action request","Reward lure"],
+    "Credential theft": ["Sensitive verification data","Credential/payment lure"],
+    "Impersonation": ["Authority/account impersonation","Brand impersonation"],
+    "Link obfuscation": ["URL shortener","Punycode domain","Obfuscated destination","Deeply nested hostname","Malformed URL","Bidirectional text obfuscation"],
+    "Transport security": ["No HTTPS","Insecure HTTP","TLS verification disabled"],
+    "Secret exposure": ["Credential exposure","Secret in remote request"],
+    "Code execution": ["Dangerous execution pattern"],
+  };
+  return result?.findings?.filter((f) => groups[category]?.includes(f.signal)).length || 0;
+}
+
 export default function Home() {
   const [tool, setTool] = useState("message");
   const [input, setInput] = useState("");
@@ -270,6 +283,23 @@ export default function Home() {
         {error && <div className="error"><AlertTriangle size={17} /><span>{error}</span></div>}
 
         {result && (
+          <div className="analysis-overview">
+            <div className="overview-main">
+              <div className="verdict-line">
+                <span className={`risk-badge ${levelTone(result.level)}`}>{result.level} RISK</span>
+                <span className="confidence"><Activity size={12}/> {result.confidence || 0}% confidence</span>
+              </div>
+              <h3>{result.summary || "Analysis complete."}</h3>
+              <p>Detected {result.findings.length} signal{result.findings.length === 1 ? "" : "s"} across {result.categories?.length || 0} security {result.categories?.length === 1 ? "category" : "categories"}.</p>
+            </div>
+            <div className={`overview-score ${levelTone(result.level)}`}><b>{result.score}</b><span>/100</span></div>
+          </div>
+          <div className="signal-map">
+            {["Social engineering","Credential theft","Impersonation","Link obfuscation","Transport security","Secret exposure","Code execution"].map((category) => {
+              const count = signalCount(result, category);
+              return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: \`${Math.min(100, count * 34)}%\` }} /></i><em>{count}</em></div>;
+            })}
+          </div>
           <div className="result-panel">
             <div className="verdict">
               <div className="verdict-head">
@@ -290,7 +320,7 @@ export default function Home() {
             </div>
 
             <div className="evidence">
-              <div className="panel-heading"><div><span className="eyebrow">EVIDENCE</span><h3>Why this was flagged</h3></div><span>{result.findings.length} signals</span></div>
+              <div className="panel-heading"><div><span className="eyebrow">EVIDENCE TRACE</span><h3>Why this was flagged</h3></div><span>{result.findings.length} signal{result.findings.length === 1 ? "" : "s"} · {result.confidence || 0}% confidence</span></div>
               {result.findings.length ? result.findings.map((f, index) => (
                 <div className="evidence-card" key={f.signal}>
                   <div className={`evidence-number ${levelTone(result.level)}`}>{String(index + 1).padStart(2, "0")}</div>
@@ -301,7 +331,7 @@ export default function Home() {
                 <div className="clean-state"><CheckCircle2 size={20} /><div><b>No obvious high-risk pattern detected</b><p>The current rules did not match a known warning signal.</p></div></div>
               )}
 
-              <div className="next-steps">
+              <div className="decision-line"><span>Recommended decision</span><b>{result.level === "HIGH" ? "DO NOT PROCEED" : result.level === "MEDIUM" ? "VERIFY FIRST" : "PROCEED WITH CAUTION"}</b></div><div className="next-steps">
                 <div className="next-icon"><ShieldCheck size={17} /></div>
                 <div><span className="eyebrow">WHAT TO DO NEXT</span>{result.recommendations.map((item, index) => <p key={index}><span>{index + 1}</span>{item}</p>)}</div>
               </div>
