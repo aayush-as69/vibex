@@ -1,3 +1,0 @@
-module.exports=[44194,a=>{"use strict";let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call the default export of [project]/app/error.js from the server, but it's on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/app/error.js","default");a.s(["default",0,b])},79493,a=>{"use strict";var b=a.i(44194);a.n(b)},89219,function(a){a.n(a.i(79493))},11857,(a,b,c)=>{"use strict";b.exports=a.r(24951).vendored["react-rsc"].ReactServerDOMTurbopackServer}];
-
-//# sourceMappingURL=_1cd-5w_nx4a-c._.js.map
