@@ -24,6 +24,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run Code Guard
+        run: npm run guard
+
       - name: Run ESLint
         run: npm run lint
 
