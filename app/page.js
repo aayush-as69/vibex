@@ -511,7 +511,7 @@ export default function Home() {
       )}
 
       <section className="trust-strip">
-        <div><ShieldCheck size={20} /><div><b>Defensive by design</b><span>VibeX Shield analyzes text locally through deterministic rules and does not execute submitted code.</span></div></div>
+        <div><ShieldCheck size={20} /><div><b>Defensive by design</b><span>Analysis runs through this app’s own deterministic API. Inputs are not forwarded to AI or threat-intelligence providers, the app does not persist submissions, and submitted code is never executed.</span></div></div>
         <div><ExternalLink size={16} /><span>Never treat a green result as proof that something is safe.</span></div>
       </section>
 
