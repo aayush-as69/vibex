@@ -117,7 +117,7 @@ RECOMMENDATION`}</pre>
       </section>
 
       <section className="landing-cta">
-        <div><div className="eyebrow">READY TO CHECK?</div><h2>Don't guess. Inspect first.</h2><p>Open the Shield workspace and run your first analysis.</p></div>
+        <div><div className="eyebrow">READY TO CHECK?</div><h2>Don&apos;t guess. Inspect first.</h2><p>Open the Shield workspace and run your first analysis.</p></div>
         <Link href="/shield" className="landing-primary">Open Shield <ArrowRight size={18} /></Link>
       </section>
 
