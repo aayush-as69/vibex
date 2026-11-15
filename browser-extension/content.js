@@ -41,7 +41,7 @@
     if (privateHost(host)) add(30,"The destination is a local or private network address.");
     if (url.port && !["80","443"].includes(url.port)) add(10,"The link uses a non-standard web port.");
     if (/login|verify|secure|wallet|payment|kyc|bank|password|otp/i.test(url.pathname + url.search)) add(15,"The path suggests a login, verification, banking or payment action.");
-    const brand = Object.keys(BRANDS).find((name) => host.includes(name));
+    const brand = Object.keys(BRANDS).find((name) => new RegExp("(?:^|[.-])" + name + "(?:[.-]|$)").test(host));
     if (brand && !BRANDS[brand].some((domain) => host === domain || host.endsWith("." + domain))) add(28,"The hostname uses the name of " + brand + " but is not one of its known domains.");
     score = Math.min(100,score);
     return {score,level:score >= 70 ? "HIGH" : score >= THRESHOLD ? "MEDIUM" : "LOW",reasons:[...new Set(reasons)],url:url.href};

@@ -65,3 +65,19 @@ test("flags UPI collect requests as potential debits", () => {
   assert.ok(result.findings.some((finding) => finding.signal === "UPI collect/payment request"));
   assert.ok(result.recommendations.some((item) => item.includes("UPI PIN")));
 });
+
+test("does not flag unrelated hostnames that merely contain a brand name", () => {
+  for (const url of ["https://taxis.com/ride", "https://pineapple-recipes.com"]) {
+    const result = analyze(url, "url");
+    assert.ok(!result.findings.some((finding) => finding.signal === "Brand impersonation"), url);
+  }
+});
+
+test("still flags lookalike brand hostnames", () => {
+  for (const url of ["https://google.com.evil.xyz/", "https://paypal-secure.com/", "https://sbi.evil.top/"]) {
+    const result = analyze(url, "url");
+    assert.ok(result.findings.some((finding) => finding.signal === "Brand impersonation"), url);
+  }
+  const trusted = analyze("https://www.axisbank.com/", "url");
+  assert.ok(!trusted.findings.some((finding) => finding.signal === "Brand impersonation"));
+});
