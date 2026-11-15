@@ -1,6 +1,6 @@
 {
   "name": "vibex-shield",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -8,6 +8,7 @@
     "guard": "node scripts/code-guard.js",
     "lint": "eslint .",
     "sensor:agent": "node sensor-agent/server.js",
+    "shield": "node bin/vibex.js",
     "start": "next start",
     "test": "node --test"
   },
