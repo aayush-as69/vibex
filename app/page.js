@@ -147,7 +147,8 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 260));\n      setScanStep("Running threat rules");
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      setScanStep("Running threat rules");
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
