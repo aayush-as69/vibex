@@ -141,3 +141,18 @@ button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid #8
 @media(prefers-reduced-motion:reduce){
   .tool-card,.primary-ghost,.analyze,.scenario-row button,.sample,.reset,.clear-history{transition:none}
 }
+
+
+/* Automatic protection modules */
+.auto-suite{padding:38px 0 8px}
+.auto-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.auto-card{display:flex;min-height:218px;flex-direction:column;align-items:flex-start;padding:21px;border:1px solid #24464d;border-radius:16px;background:linear-gradient(145deg,#0a1b22,#071218);color:inherit;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.auto-card:hover{transform:translateY(-3px);border-color:#5bada4;box-shadow:0 18px 42px rgba(0,0,0,.24),0 0 28px rgba(110,231,216,.06)}
+.auto-index{font-size:12px;letter-spacing:.14em;color:#6ee7d8;font-weight:900}
+.auto-card>b{font-size:22px;margin-top:15px;letter-spacing:-.03em}
+.auto-card p{font-size:15px;line-height:1.6;color:#96adb3;margin:8px 0 18px}
+.auto-state{display:flex;align-items:center;gap:8px;margin-top:auto;color:#77e4d2;font-size:12px;font-weight:900;letter-spacing:.1em}
+.auto-card code{margin-top:auto;padding:8px 10px;background:#031014;border:1px solid #1e3d44;border-radius:8px;color:#9de9dd;font-size:13px}
+.auto-note{margin:12px 2px 0;color:#70868d;font-size:13px;line-height:1.6}
+@media(max-width:850px){.auto-grid{grid-template-columns:1fr}.auto-card{min-height:unset}.auto-card p{max-width:60ch}}
+@media(max-width:560px){.auto-suite{padding-top:29px}.auto-card{padding:18px}.auto-card>b{font-size:21px}}
