@@ -72,6 +72,41 @@ const demoCases = [
   },
 ];
 
+function inspectInput(input, type, findings) {
+  const text = String(input || "");
+  if (type === "url") {
+    try {
+      const u = new URL(text);
+      return [
+        ["PROTOCOL", u.protocol.replace(":", ""), u.protocol === "https:" ? "ok" : "warn"],
+        ["HOST", u.hostname, /xn--|\.xyz$|\.top$|\.tk$|\.ml$|\.ga$|\.cf$|\.gq$/i.test(u.hostname) ? "danger" : "ok"],
+        ["PATH", u.pathname || "/", /login|verify|account|secure|payment|otp|password/i.test(u.pathname) ? "warn" : "ok"],
+        ["QUERY", u.search ? u.search.slice(1) : "—", /otp|cvv|pin|password|token|verify/i.test(u.search) ? "danger" : "ok"],
+      ];
+    } catch {
+      return [["INPUT", text, "danger"]];
+    }
+  }
+  if (type === "code") {
+    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:///i.test(line)) ? "danger" : "neutral"]);
+  }
+  const terms = [
+    ["URGENT / PRESSURE", /urgent|immediately|within \d+|act now|expires/i],
+    ["MONEY / PAYMENT", /money|payment|upi|bank|refund|transfer|cashback/i],
+    ["OTP / CREDENTIAL", /otp|cvv|pin|mpin|password|passcode/i],
+    ["ACTION", /click|tap|open|download|install|scan/i],
+    ["AUTHORITY", /police|customs|income tax|kyc|parcel|electricity|sim|account/i],
+  ];
+  return terms.filter(([,re]) => re.test(text)).map(([label,re]) => [label, text.match(re)?.[0] || "", "danger"]);
+}
+
+function InspectionView({ input, type, findings }) {
+  const rows = inspectInput(input, type, findings);
+  if (type === "code") return <div className="inspection code-inspection">{rows.map(([label, value, tone]) => <div className={`code-row ${tone}`} key={label}><span>{label}</span><code>{value}</code></div>)}</div>;
+  if (type === "url") return <div className="inspection url-inspection">{rows.map(([label, value, tone]) => <div className={`url-part ${tone}`} key={label}><span>{label}</span><b>{value}</b></div>)}</div>;
+  return <div className="inspection message-inspection">{rows.length ? rows.map(([label, value]) => <div className="highlight-chip" key={label}><span>{label}</span><b>{value}</b></div>) : <div className="highlight-clean">No recognized high-risk phrase was isolated.</div>}</div>;
+}
+
 function formatTime(value) {
   return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -300,6 +335,7 @@ export default function Home() {
               return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: \`${Math.min(100, count * 34)}%\` }} /></i><em>{count}</em></div>;
             })}
           </div>
+          <div className="inspection-section"><div className="panel-heading"><div><span className="eyebrow">INPUT FORENSICS</span><h3>What the engine noticed</h3></div><span>Signal-level inspection</span></div><InspectionView input={input} type={tool} findings={result.findings} /></div>
           <div className="result-panel">
             <div className="verdict">
               <div className="verdict-head">
