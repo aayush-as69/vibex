@@ -74,24 +74,87 @@ const demoCases = [
   },
 ];
 
+function redactSensitiveText(value) {
+  return String(value || "")
+    .replace(/((?:api[_-]?key|client[_-]?secret|access[_-]?token|password|secret|authorization)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1[REDACTED]")
+    .replace(/\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16})\b/g, "[REDACTED]")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/-]{12,}/gi, "Bearer [REDACTED]")
+    .replace(/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/gi, "[PRIVATE KEY REDACTED]");
+}
+
+function safeQueryString(searchParams) {
+  return [...searchParams.entries()].map(([key, value]) => {
+    const safeValue = /(?:token|secret|password|otp|pin|cvv|api[_-]?key|auth|code)/i.test(key) ? "[REDACTED]" : value;
+    return key + "=" + safeValue;
+  }).join("&");
+}
+
+function findingForRow(type, label, value, findings) {
+  const text = String(value || "").toLowerCase();
+  const find = (signal) => findings.find((finding) => finding.signal === signal) || null;
+
+  if (type === "message") {
+    const signals = {
+      "URGENT / PRESSURE": "Urgency pressure",
+      "MONEY / PAYMENT": "Financial action",
+      "OTP / CREDENTIAL": "Sensitive verification data",
+      ACTION: "Action request",
+      AUTHORITY: "Authority/account impersonation",
+      "EMBEDDED LINK": "Embedded suspicious link",
+    };
+    return find(signals[label]);
+  }
+
+  if (type === "code") {
+    if (/api[_-]?key|client[_-]?secret|access[_-]?token|password|secret|authorization|-----begin/i.test(text)) return find("Credential exposure");
+    if (/eval\s*\(|new\s+function|child_process|\bexec(?:sync)?\s*\(|\bspawn(?:sync)?\s*\(|os\.system|subprocess\.|rm\s+-rf|document\.cookie|innerhtml|pickle\.loads|yaml\.load/i.test(text)) return find("Dangerous execution pattern");
+    if (/http:\/\//i.test(text)) return find("Insecure HTTP");
+    if (/rejectunauthorized|verify\s*[:=]\s*false|node_tls_reject/i.test(text)) return find("TLS verification disabled");
+    if (/https?:\/\//i.test(text) && /token|key|secret|password/i.test(text)) return find("Secret in remote request");
+    return null;
+  }
+
+  if (label === "PROTOCOL" && text !== "https") return find("No HTTPS");
+  if (label === "INPUT") return find("Malformed URL");
+  if (label === "HOST") {
+    if (/xn--/.test(text)) return find("Punycode domain");
+    if (/[^\x00-\x7f]/i.test(text)) return find("Unicode hostname");
+    if (/\.(xyz|top|tk|ml|ga|cf|gq|click|support)$/.test(text)) return find("Suspicious domain suffix");
+    if (/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(text)) return find("Local or private destination");
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(text) || text.startsWith("[")) return find("IP address destination");
+    if (text.split(".").length > 4) return find("Deeply nested hostname");
+    return find("Brand impersonation") || find("URL shortener");
+  }
+  if (label === "PATH" || label === "QUERY") {
+    if (/login|verify|secure|wallet|payment|kyc|bank|password|otp/i.test(text)) return find("Credential/payment lure");
+    if (/xn--|@/.test(text)) return find("Obfuscated destination");
+    if (/token|password|otp|pin|cvv/i.test(text)) return find("Credential/payment lure");
+  }
+  return null;
+}
+
 function inspectInput(input, type, findings) {
   const text = String(input || "");
   if (type === "url") {
     try {
       const candidate = /^https?:\/\//i.test(text) ? text : "https://" + text;
-      const u = new URL(candidate);
+      const url = new URL(candidate);
       return [
-        ["PROTOCOL", u.protocol.replace(":", ""), u.protocol === "https:" ? "ok" : "warn"],
-        ["HOST", u.hostname, /xn--|\.xyz$|\.top$|\.tk$|\.ml$|\.ga$|\.cf$|\.gq$/i.test(u.hostname) ? "danger" : "ok"],
-        ["PATH", u.pathname || "/", /login|verify|account|secure|payment|otp|password/i.test(u.pathname) ? "warn" : "ok"],
-        ["QUERY", u.search ? u.search.slice(1) : "—", /otp|cvv|pin|password|token|verify/i.test(u.search) ? "danger" : "ok"],
+        ["PROTOCOL", url.protocol.replace(":", ""), url.protocol === "https:" ? "ok" : "warn"],
+        ["HOST", url.hostname, /xn--|\.xyz$|\.top$|\.tk$|\.ml$|\.ga$|\.cf$|\.gq$/i.test(url.hostname) ? "danger" : "ok"],
+        ["PATH", url.pathname || "/", /login|verify|account|secure|payment|otp|password/i.test(url.pathname) ? "warn" : "ok"],
+        ["QUERY", url.search ? safeQueryString(url.searchParams) : "—", /otp|cvv|pin|password|token|verify|secret|key/i.test(url.search) ? "danger" : "ok"],
       ];
     } catch {
-      return [["INPUT", text, "danger"]];
+      return [["INPUT", redactSensitiveText(text), "danger"]];
     }
   }
   if (type === "code") {
-    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:\/\//.test(line)) ? "danger" : "neutral"]);
+    const safeText = redactSensitiveText(text);
+    return safeText.split("\n").map((line, index) => {
+      const danger = Boolean(findingForRow("code", String(index + 1), line, findings));
+      return [String(index + 1).padStart(2, "0"), line || " ", danger ? "danger" : "neutral"];
+    });
   }
   const terms = [
     ["URGENT / PRESSURE", /urgent|immediately|within \d+|act now|expires/i],
@@ -100,16 +163,35 @@ function inspectInput(input, type, findings) {
     ["ACTION", /click|tap|open|download|install|scan/i],
     ["AUTHORITY", /police|customs|income tax|kyc|parcel|electricity|sim|account/i],
   ];
-  return terms.filter(([,re]) => re.test(text)).map(([label,re]) => [label, text.match(re)?.[0] || "", "danger"]);
+  const rows = terms.filter(([, pattern]) => pattern.test(text)).map(([label, pattern]) => [label, text.match(pattern)?.[0] || "", "danger"]);
+  const links = text.match(/(?:https?:\/\/|www\.)[^\s<>"']+/gi) || [];
+  if (links.length) rows.push(["EMBEDDED LINK", redactSensitiveText(links[0]), "danger"]);
+  return rows;
 }
 
 function InspectionView({ input, type, findings, selectedFinding, onSelect }) {
   const rows = inspectInput(input, type, findings);
-  const selectedText = String(selectedFinding?.evidence || "").toLowerCase();
-  const isSelected = (value) => selectedText && String(value).toLowerCase().includes(selectedText);
-  if (type === "code") return <div className="inspection code-inspection">{rows.map(([label, value, tone]) => <button className={`code-row ${tone} ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><code>{value}</code></button>)}</div>;
-  if (type === "url") return <div className="inspection url-inspection">{rows.map(([label, value, tone]) => <button className={`url-part ${tone} ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><b>{value}</b></button>)}</div>;
-  return <div className="inspection message-inspection">{rows.length ? rows.map(([label, value]) => <button className={`highlight-chip ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><b>{value}</b></button>) : <div className="highlight-clean">No recognized high-risk phrase was isolated.</div>}</div>;
+  const renderRow = (row, className, contentTag) => {
+    const [label, value, tone] = row;
+    const finding = findingForRow(type, label, value, findings);
+    const selected = finding && selectedFinding?.signal === finding.signal && selectedFinding?.evidence === finding.evidence;
+    return (
+      <button
+        type="button"
+        className={className + " " + tone + (selected ? " selected" : "")}
+        key={label}
+        onClick={() => finding && onSelect(finding)}
+        disabled={!finding}
+        aria-pressed={Boolean(selected)}
+      >
+        <span>{label}</span>
+        {contentTag === "code" ? <code>{value}</code> : <b>{value}</b>}
+      </button>
+    );
+  };
+  if (type === "code") return <div className="inspection code-inspection">{rows.map((row) => renderRow(row, "code-row", "code"))}</div>;
+  if (type === "url") return <div className="inspection url-inspection">{rows.map((row) => renderRow(row, "url-part", "bold"))}</div>;
+  return <div className="inspection message-inspection">{rows.length ? rows.map((row) => renderRow(row, "highlight-chip", "bold")) : <div className="highlight-clean">No recognized high-risk phrase was isolated.</div>}</div>;
 }
 
 function formatTime(value) {
@@ -173,7 +255,7 @@ export default function Home() {
           score: data.result.score,
           level: data.result.level,
           time: data.result.checkedAt,
-          preview: input.slice(0, 72),
+          preview: redactSensitiveText(input).slice(0, 72),
           input,
           result: data.result,
         },
