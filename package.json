@@ -1,8 +1,23 @@
 {
-  "name":"vibex-shield",
-  "version":"0.2.0",
-  "private":true,
-  "scripts":{"dev":"next dev","build":"next build","start":"next start","lint":"eslint .","test":"node --test"},
-  "dependencies":{"next":"^16.0.0","react":"^19.0.0","react-dom":"^19.0.0","lucide-react":"^0.468.0"},
-  "devDependencies":{"eslint":"^9.0.0","eslint-config-next":"^16.0.0"}
+  "name": "vibex-shield",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.468.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0"
+  },
+  "type": "module"
 }
