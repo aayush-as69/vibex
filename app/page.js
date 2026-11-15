@@ -88,7 +88,7 @@ function inspectInput(input, type, findings) {
     }
   }
   if (type === "code") {
-    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:///i.test(line)) ? "danger" : "neutral"]);
+    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:\/\/.test(line)) ? "danger" : "neutral"]);
   }
   const terms = [
     ["URGENT / PRESSURE", /urgent|immediately|within \d+|act now|expires/i],
@@ -136,7 +136,9 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);\n  const [selectedFinding, setSelectedFinding] = useState(null);\n  const [scanStep, setScanStep] = useState("");
+  const [history, setHistory] = useState([]);
+  const [selectedFinding, setSelectedFinding] = useState(null);
+  const [scanStep, setScanStep] = useState("");
 
   const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
 
@@ -145,12 +147,14 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 260));\n      setScanStep("Running threat rules");\n      const res = await fetch("/api/analyze", {
+      await new Promise((resolve) => setTimeout(resolve, 260));\n      setScanStep("Running threat rules");
+      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: tool, input }),
       });
-      const data = await res.json();\n      setScanStep("Building evidence trace");
+      const data = await res.json();
+      setScanStep("Building evidence trace");
       if (!res.ok || !data.ok) throw new Error(data.error || "Analysis failed.");
 
       setResult(data.result);
@@ -233,7 +237,7 @@ export default function Home() {
             Get a human-readable risk signal before you click, pay, share or run.
           </p>
           <div className="hero-actions">
-            <button className="primary-ghost" onClick={() => document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth" })}>
+            <button type="button" className="primary-ghost" onClick={() => document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth" })}>
               Start a security check <ArrowRight size={16} />
             </button>
             <span><Zap size={14} /> No account · No upload · No stored input</span>
@@ -271,7 +275,7 @@ export default function Home() {
           {tools.map((item) => {
             const Icon = item.icon;
             return (
-              <button className={`tool-card ${tool === item.id ? "selected" : ""}`} onClick={() => selectTool(item.id)} key={item.id}>
+              <button type="button" aria-pressed={tool === item.id} className={`tool-card ${tool === item.id ? "selected" : ""}`} onClick={() => selectTool(item.id)} key={item.id}>
                 <div className="tool-top"><span className="tool-icon"><Icon size={19} /></span><ChevronRight size={17} /></div>
                 <span className="tool-eyebrow">{item.eyebrow}</span>
                 <h3>{item.title}</h3>
@@ -310,8 +314,8 @@ export default function Home() {
           <div className="composer-foot">
             <button className="sample" onClick={loadSample}>Load example</button>
             <div className="composer-right">
-              {input && <button className="reset" onClick={reset}>Clear</button>}
-              <button className="analyze" disabled={loading || !input.trim()} onClick={analyze}>
+              {input && <button type="button" className="reset" onClick={reset}>Clear</button>}
+              <button type="button" className="analyze" disabled={loading || !input.trim()} onClick={analyze}>
                 {loading ? <><span className="scan-spinner" /> {scanStep || "Running checks…"}</> : <>Analyze threat <ArrowRight size={17} /></>}
               </button>
             </div>
