@@ -136,7 +136,7 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);\n  const [selectedFinding, setSelectedFinding] = useState(null);
+  const [history, setHistory] = useState([]);\n  const [selectedFinding, setSelectedFinding] = useState(null);\n  const [scanStep, setScanStep] = useState("");
 
   const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
 
@@ -145,12 +145,12 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/analyze", {
+      await new Promise((resolve) => setTimeout(resolve, 260));\n      setScanStep("Running threat rules");\n      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ type: tool, input }),
       });
-      const data = await res.json();
+      const data = await res.json();\n      setScanStep("Building evidence trace");
       if (!res.ok || !data.ok) throw new Error(data.error || "Analysis failed.");
 
       setResult(data.result);
@@ -289,7 +289,7 @@ export default function Home() {
             <div className="live-dot"><i /></div>
             <div><span className="eyebrow">ACTIVE CHECK</span><h2>{active.title}</h2></div>
           </div>
-          <div className="workspace-meta"><span><Activity size={13} /> {loading ? "Analyzing" : "Ready"}</span><span>Max 5,000 chars</span></div>
+          <div className="workspace-meta"><span className={loading ? "analysis-live" : ""}><Activity size={13} /> {loading ? scanStep || "Analyzing" : "Ready"}</span><span>Max 5,000 chars</span></div>
         </div>
 
         <div className="scenario-row">
@@ -312,7 +312,7 @@ export default function Home() {
             <div className="composer-right">
               {input && <button className="reset" onClick={reset}>Clear</button>}
               <button className="analyze" disabled={loading || !input.trim()} onClick={analyze}>
-                {loading ? "Running checks…" : "Analyze threat"} <ArrowRight size={17} />
+                {loading ? <><span className="scan-spinner" /> {scanStep || "Running checks…"}</> : <>Analyze threat <ArrowRight size={17} /></>}
               </button>
             </div>
           </div>
