@@ -134,7 +134,7 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState([]);\n  const [selectedFinding, setSelectedFinding] = useState(null);
 
   const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
 
@@ -152,6 +152,7 @@ export default function Home() {
       if (!res.ok || !data.ok) throw new Error(data.error || "Analysis failed.");
 
       setResult(data.result);
+      setSelectedFinding(data.result.findings?.[0] || null);
       setHistory((items) => [
         {
           id: crypto.randomUUID(),
@@ -367,7 +368,7 @@ export default function Home() {
                 <div className="clean-state"><CheckCircle2 size={20} /><div><b>No obvious high-risk pattern detected</b><p>The current rules did not match a known warning signal.</p></div></div>
               )}
 
-              <div className="decision-line"><span>Recommended decision</span><b>{result.level === "HIGH" ? "DO NOT PROCEED" : result.level === "MEDIUM" ? "VERIFY FIRST" : "PROCEED WITH CAUTION"}</b></div><div className="next-steps">
+              <div className="decision-line"><span>Recommended decision</span><b>{result.level === "HIGH" ? "DO NOT PROCEED" : result.level === "MEDIUM" ? "VERIFY FIRST" : "PROCEED WITH CAUTION"}</b></div>{selectedFinding && <div className="finding-detail"><div><span className="eyebrow">SELECTED SIGNAL</span><h3>{selectedFinding.signal}</h3></div><span className="finding-weight">+{selectedFinding.weight} risk</span><p>{selectedFinding.evidence}</p><div className="detail-grid"><div><span>WHY IT MATTERS</span><b>{selectedFinding.weight >= 25 ? "High-impact indicator" : selectedFinding.weight >= 15 ? "Meaningful warning" : "Supporting signal"}</b></div><div><span>ACTION</span><b>Verify independently before proceeding.</b></div></div></div>}<div className="next-steps">
                 <div className="next-icon"><ShieldCheck size={17} /></div>
                 <div><span className="eyebrow">WHAT TO DO NEXT</span>{result.recommendations.map((item, index) => <p key={index}><span>{index + 1}</span>{item}</p>)}</div>
               </div>
