@@ -157,43 +157,65 @@ The interface is designed for a quick **inspect → understand → decide** flow
 | API | Next.js Route Handler |
 | Styling | CSS |
 | Testing | Node.js built-in test runner |
-| Deployment | Any Next.js-compatible host |
+| Product runtime | Unified JavaScript launcher for dashboard and optional local sensor agent |\n| Protection modules | Chrome/Edge extension, CI Code Guard, factory sensor agent |\n| Deployment | Next.js-compatible host for dashboard; local gateway for sensor agent |
 
-## Quick start
+## Quick start — one product
 
-### 1. Clone the repository
+### 1. Get the product
 
 ```bash
 git clone https://github.com/aayush-as69/vibex.git
 cd vibex
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Start the development server
+### 2. Configure optional factory monitoring
+
+Copy `.env.example` to `.env.local`. Generate a private token with Node.js:
 
 ```bash
-npm run dev
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Open **http://localhost:3000**.
+Put the generated value in `SENSOR_API_TOKEN` in `.env.local`. Keep this file private and never commit it. The dashboard and other protection modules work without the sensor token; the factory agent is optional.
 
-### 4. Run the tests
+### 3. Run the complete local product
 
 ```bash
+npm run shield -- up
+```
+
+Open **http://localhost:3000**. This single command starts the dashboard and, when a valid sensor token is configured, the local Factory Sensor Agent. Press **Ctrl+C** to stop the services.
+
+### 4. Check installation and run protection tools
+
+```bash
+npm run shield -- doctor
+npm run shield -- guard
 npm test
 ```
 
-### 5. Create a production build
+### 5. Install browser protection once
 
 ```bash
-npm run build
-npm start
+npm run shield -- extension
 ```
+
+Then open `chrome://extensions` or `edge://extensions`, enable Developer mode, and select the repository's `browser-extension` folder using **Load unpacked**. This is a one-time browser installation; it is shipped inside the same product archive.
+
+### Other launcher commands
+
+| Command | Purpose |
+|---|---|
+| `npm run shield -- up` | Start dashboard + configured local sensor service |
+| `npm run shield -- up --prod` | Start the production dashboard + configured sensor service (run `npm run build` first) |
+| `npm run shield -- doctor` | Check the installed product |
+| `npm run shield -- guard` | Run the Code Guard scan |
+| `npm run shield -- sensor` | Start only the factory sensor agent |
+| `npm run shield -- extension` | Show browser extension installation steps |
+| `npm run guard` | Direct Code Guard command |
+
+The modules share one repository, release archive, setup guide and product launcher. Browser Link Guard is activated once in the browser; Code Guard is automatically included in CI; the sensor agent runs locally when configured.
 
 ## Demo walkthrough
 
@@ -238,11 +260,11 @@ vibex/
 
 ## Documentation
 
-Technical details are kept in `docs/`.
+Product setup, operation and safety details are kept in `docs/`.
 
 | If you want to | Read |
 |---|---|
-| Understand the architecture | [Architecture](docs/ARCHITECTURE.md) |
+| Install and run the complete product | [Product guide](docs/PRODUCT_GUIDE.md) |\n| Understand the architecture | [Architecture](docs/ARCHITECTURE.md) |\n| Install the browser and factory modules | [Automatic protection](docs/AUTOMATIC_PROTECTION.md) |
 | Review security boundaries | [Security](docs/SECURITY.md) |
 | See the phased roadmap | [Build plan](docs/BUILD_PLAN.md) |
 
