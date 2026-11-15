@@ -81,3 +81,8 @@ test("still flags lookalike brand hostnames", () => {
   const trusted = analyze("https://www.axisbank.com/", "url");
   assert.ok(!trusted.findings.some((finding) => finding.signal === "Brand impersonation"));
 });
+
+test("flags local URL destinations", () => {
+  const result = analyze("http://127.0.0.1/admin", "url");
+  assert.ok(result.findings.some((finding) => finding.signal === "Local or private destination"));
+});
