@@ -166,3 +166,15 @@ button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid #8
 .speak-button:hover{background:#103638;border-color:#6ee7d8}
 .speak-button:focus-visible,.voice-controls select:focus-visible{outline:2px solid #8af4e6;outline-offset:3px}
 @media(max-width:650px){.voice-warning-tools{align-items:stretch;flex-direction:column;padding:16px}.voice-controls{width:100%}.voice-controls select{flex:1}.speak-button{flex:1}}
+
+
+/* Unified product sensor connection state */
+.sensor-connection{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:7px 10px;border:1px solid #25434a;border-radius:99px;background:#07161b;font-size:12px;font-weight:900;letter-spacing:.1em}
+.sensor-connection i{width:8px;height:8px;display:inline-block;border-radius:50%;background:#81949a}
+.sensor-connection.connected{color:#81e6c6;border-color:#285b50;background:#0a211d}
+.sensor-connection.connected i{background:#60e5b4;box-shadow:0 0 12px #60e5b4}
+.sensor-connection.disconnected{color:#c6a878}
+.sensor-connection.disconnected i{background:#d2a65d}
+.sensor-message{display:block;margin-top:8px;color:#81979d;font-size:13px;line-height:1.55}
+.sensor-product-card{position:relative}
+.sensor-product-card code{margin-top:14px}
