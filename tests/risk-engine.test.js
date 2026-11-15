@@ -50,3 +50,5 @@ test("rejects oversized input", () => {
 test("rejects unsupported analysis types", () => {
   assert.throws(() => analyze("hello", "unknown"), /Unsupported/);
 });
+
+test("redacts secrets from links embedded in messages", () => {\n  const secret = "supersecret_access_token_123456";\n  const result = analyze("Please review https://example.xyz/login?access_token=" + secret, "message");\n  assert.ok(result.findings.some((finding) => finding.signal === "Embedded suspicious link"));\n  assert.ok(!JSON.stringify(result).includes(secret));\n});\n
