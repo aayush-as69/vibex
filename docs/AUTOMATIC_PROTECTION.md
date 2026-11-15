@@ -1,6 +1,16 @@
 # VibeX Shield — Automatic Protection Modules
 
-VibeX Shield has a web analysis console plus three deployable defensive components: a browser link guard, a CI code guard and a factory telemetry agent.
+VibeX Shield is one product containing the web dashboard, browser extension, CI code scanner and factory telemetry agent. Install dependencies once and use the unified launcher for local services. See the [Product Guide](PRODUCT_GUIDE.md) for first-run setup, commands and packaging.
+
+## Unified local startup
+
+After installing dependencies, run:
+
+```bash
+npm run shield -- up
+```
+
+This starts the dashboard and starts the sensor agent if `SENSOR_API_TOKEN` is configured in `.env.local`. The browser extension is installed once in Chrome/Edge; Code Guard is integrated into GitHub Actions.
 
 ## 1. Browser Link Guard
 
@@ -20,10 +30,10 @@ The extension checks URL structure locally. It does not send browsing history, p
 
 ## 2. Code Guard
 
-Run the repository scanner locally:
+Run the repository scanner locally through the product launcher:
 
 ```bash
-npm run guard
+npm run shield -- guard
 ```
 
 The CI workflow runs the same scan on pushes and pull requests. A high-confidence provider token, private key or hard-coded credential assignment fails the check. Output includes file and line but never prints the secret value.
@@ -38,7 +48,7 @@ The standalone Node.js agent accepts JSON telemetry from a local gateway and che
 
 ```powershell
 $env:SENSOR_API_TOKEN = "use-a-unique-random-token-at-least-24-characters"
-npm run sensor:agent
+npm run shield -- sensor
 ```
 
 **macOS/Linux:**
