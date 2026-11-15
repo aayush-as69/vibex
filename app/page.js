@@ -78,7 +78,8 @@ function inspectInput(input, type, findings) {
   const text = String(input || "");
   if (type === "url") {
     try {
-      const u = new URL(text);
+      const candidate = /^https?:\/\//i.test(text) ? text : "https://" + text;
+      const u = new URL(candidate);
       return [
         ["PROTOCOL", u.protocol.replace(":", ""), u.protocol === "https:" ? "ok" : "warn"],
         ["HOST", u.hostname, /xn--|\.xyz$|\.top$|\.tk$|\.ml$|\.ga$|\.cf$|\.gq$/i.test(u.hostname) ? "danger" : "ok"],
@@ -150,8 +151,9 @@ export default function Home() {
     if (!input.trim() || loading) return;
     setLoading(true);
     setError("");
+    setNotice("");
     try {
-      await new Promise((resolve) => setTimeout(resolve, 260));
+      await new Promise((resolve) => setTimeout(resolve, 180));
       setScanStep("Running threat rules");
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -189,12 +191,16 @@ export default function Home() {
     setInput("");
     setResult(null);
     setError("");
+    setNotice("");
+    setSelectedFinding(null);
   };
 
   const loadSample = () => {
     setInput(active.sample);
     setResult(null);
     setError("");
+    setNotice("");
+    setSelectedFinding(null);
   };
 
   const loadCase = (item) => {
@@ -202,6 +208,8 @@ export default function Home() {
     setInput(item.input);
     setResult(null);
     setError("");
+    setNotice("");
+    setSelectedFinding(null);
     window.scrollTo({ top: document.querySelector(".workspace")?.offsetTop || 0, behavior: "smooth" });
   };
 
