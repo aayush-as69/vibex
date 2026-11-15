@@ -20,6 +20,10 @@ Track 3: Cyber Safety — protecting citizens, shops and factories from scams. T
 - [x] Session history
 - [x] Responsive judge/demo UI
 - [x] Automated rules-engine tests
+- [x] Browser-side text-file import (up to 5,000 characters)
+- [x] Complete in-session history restoration
+- [x] Copyable findings and privacy-conscious text report export
+- [x] API request-size and JSON validation with no-store responses
 
 ## Phase 2 — Real detection engine
 - [ ] URL reputation and redirect analysis through an isolated service
@@ -32,7 +36,7 @@ Track 3: Cyber Safety — protecting citizens, shops and factories from scams. T
 ## Phase 3 — Protection workflows
 - [ ] Browser/share-sheet check flow
 - [ ] Malicious-link warning/block page
-- [ ] One-tap report and evidence export
+- [x] Findings and recommendation report export (submitted payload excluded)
 - [ ] Rate limiting, abuse protection and privacy-aware audit logs
 - [ ] Account/session controls if cloud persistence is introduced
 
