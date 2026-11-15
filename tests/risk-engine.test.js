@@ -24,7 +24,7 @@ test("flags code secrets and dangerous execution", () => {
 
 test("redacts the value of detected secrets", () => {
   const secret = "sk_live_super_secret_value_123456";
-  const result = analyze(`const API_KEY = "${secret}";`, "code");
+  const result = analyze("const API_KEY = \"" + secret + "\";", "code");
   assert.ok(result.findings.some((finding) => finding.signal === "Credential exposure"));
   assert.ok(!JSON.stringify(result).includes(secret));
 });
@@ -51,4 +51,9 @@ test("rejects unsupported analysis types", () => {
   assert.throws(() => analyze("hello", "unknown"), /Unsupported/);
 });
 
-test("redacts secrets from links embedded in messages", () => {\n  const secret = "supersecret_access_token_123456";\n  const result = analyze("Please review https://example.xyz/login?access_token=" + secret, "message");\n  assert.ok(result.findings.some((finding) => finding.signal === "Embedded suspicious link"));\n  assert.ok(!JSON.stringify(result).includes(secret));\n});\n
+test("redacts secrets from links embedded in messages", () => {
+  const secret = "supersecret_access_token_123456";
+  const result = analyze("Please review https://example.xyz/login?access_token=" + secret, "message");
+  assert.ok(result.findings.some((finding) => finding.signal === "Embedded suspicious link"));
+  assert.ok(!JSON.stringify(result).includes(secret));
+});
