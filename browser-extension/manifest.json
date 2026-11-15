@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "VibeX Shield — Link Guard",
+  "version": "1.0.0",
+  "description": "Locally warns before opening suspicious links. Browsing data is not sent to a server.",
+  "action": { "default_popup": "popup.html" },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_start"
+    }
+  ]
+}
