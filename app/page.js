@@ -212,6 +212,7 @@ function levelTone(level) {
 function signalCount(result, category) {
   const groups = {
     "Social engineering": ["Urgency pressure","Action request","Reward lure"],
+    "Financial fraud": ["Financial action","UPI collect/payment request"],
     "Credential theft": ["Sensitive verification data","Credential/payment lure"],
     "Impersonation": ["Authority/account impersonation","Brand impersonation"],
     "Link obfuscation": ["URL shortener","Punycode domain","Obfuscated destination","Deeply nested hostname","Malformed URL","Bidirectional text obfuscation"],
@@ -554,7 +555,7 @@ export default function Home() {
             <div className={`overview-score ${levelTone(result.level)}`}><b>{result.score}</b><span>/100</span></div>
           </div>
           <div className="signal-map">
-            {["Social engineering","Credential theft","Impersonation","Link obfuscation","Transport security","Secret exposure","Code execution"].map((category) => {
+            {["Social engineering","Financial fraud","Credential theft","Impersonation","Link obfuscation","Transport security","Secret exposure","Code execution"].map((category) => {
               const count = signalCount(result, category);
               return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: `${Math.min(100, count * 34)}%` }} /></i><em>{count}</em></div>;
             })}
