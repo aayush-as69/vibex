@@ -75,7 +75,10 @@ It gives a user one place to inspect suspicious content, explains the signals th
 - Classify results as Low, Medium or High.
 - Show the individual findings behind the score.
 - Provide safer next-step recommendations.
-- Keep the first analysis deterministic and explainable.
+- Keep the analysis deterministic and explainable.
+- Import supported text files directly in the browser (maximum 5,000 characters).
+- Restore complete results from the current browser session.
+- Copy findings or download a report that excludes the submitted payload.
 - Enforce input limits before analysis.
 
 </td>
@@ -94,7 +97,7 @@ flowchart LR
     F --> UI
 ```
 
-The current MVP deliberately keeps the core analysis local and deterministic.
+The current MVP sends analysis input to its own Next.js API route and runs a deterministic JavaScript rules engine. It does not call an external AI or threat-intelligence provider, and the app does not persist submitted content. Imported files are read as text in the browser; the file itself is not uploaded.
 
 That makes the first layer:
 
