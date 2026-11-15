@@ -57,6 +57,11 @@ const tools = [
 
 const demoCases = [
   {
+    label: "UPI collect scam",
+    type: "message",
+    input: "Approve this UPI collect request and enter your PIN to receive a ₹50,000 refund.",
+  },
+  {
     label: "Fake bank alert",
     type: "message",
     input:
@@ -444,7 +449,32 @@ export default function Home() {
         <div><span className="metric-icon"><Fingerprint size={15} /></span><div><b>3</b><small>attack surfaces</small></div></div>
         <div><span className="metric-icon"><Activity size={15} /></span><div><b>100</b><small>risk points</small></div></div>
         <div><span className="metric-icon"><LockKeyhole size={15} /></span><div><b>0</b><small>stored submissions</small></div></div>
-        <div className="engine"><i /> <span>Rules engine v2 · deterministic · explainable</span></div>
+        <div className="engine"><i /> <span>Rules engine v3 · deterministic · explainable</span></div>
+      </section>
+
+      <section className="auto-suite">
+        <div className="section-title">
+          <div><span className="eyebrow">AUTOMATIC PROTECTION</span><h2>Protection beyond the dashboard.</h2></div>
+          <span className="section-note">Installable and CI-integrated modules</span>
+        </div>
+        <div className="auto-grid">
+          <a className="auto-card" href="https://github.com/aayush-as69/vibex/tree/main/browser-extension" target="_blank" rel="noreferrer">
+            <span className="auto-index">01 / BROWSER</span><b>Link Guard</b>
+            <p>Highlights risky links and interrupts high-risk clicks before navigation in Chrome and Edge.</p>
+            <span className="auto-state">LOCAL EXTENSION <ArrowRight size={14}/></span>
+          </a>
+          <a className="auto-card" href="https://github.com/aayush-as69/vibex/blob/main/.github/workflows/ci.yml" target="_blank" rel="noreferrer">
+            <span className="auto-index">02 / DEVELOPER</span><b>Code Guard</b>
+            <p>Scans source and configuration files for exposed credentials and fails CI on high-confidence matches.</p>
+            <code>npm run guard</code>
+          </a>
+          <a className="auto-card" href="https://github.com/aayush-as69/vibex/blob/main/docs/AUTOMATIC_PROTECTION.md" target="_blank" rel="noreferrer">
+            <span className="auto-index">03 / FACTORY</span><b>Sensor Agent</b>
+            <p>Accepts authenticated sensor telemetry and raises alerts for unsafe ranges or sudden changes.</p>
+            <code>npm run sensor:agent</code>
+          </a>
+        </div>
+        <p className="auto-note">Voice-clone verification and direct UPI-app interception require native call/audio or payment-app integration. VibeX flags UPI scam wording but does not claim to authenticate a caller's voice.</p>
       </section>
 
       <section className="tool-section">
