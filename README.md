@@ -157,11 +157,15 @@ The interface is designed for a quick **inspect → understand → decide** flow
 | API | Next.js Route Handler |
 | Styling | CSS |
 | Testing | Node.js built-in test runner |
-| Product runtime | Unified JavaScript launcher for dashboard and optional local sensor agent |\n| Protection modules | Chrome/Edge extension, CI Code Guard, factory sensor agent |\n| Deployment | Next.js-compatible host for dashboard; local gateway for sensor agent |
+| Product runtime | Unified JavaScript launcher for dashboard and optional local sensor agent |
+| Protection modules | Chrome/Edge extension, CI Code Guard, factory sensor agent |
+| Deployment | Next.js-compatible host for dashboard; local gateway for sensor agent |
 
 ## Quick start — one product
 
 ### 1. Get the product
+
+Requires **Node.js 20 or newer** and npm.
 
 ```bash
 git clone https://github.com/aayush-as69/vibex.git
@@ -194,6 +198,8 @@ npm run shield -- doctor
 npm run shield -- guard
 npm test
 ```
+
+CI runs the same checks on every push and pull request to `main`: `npm test`, `npm run guard`, `npm run lint` and `npm run build`. Run all four locally before opening a pull request.
 
 ### 5. Install browser protection once
 
@@ -239,19 +245,33 @@ vibex/
 ├── app/
 │   ├── api/
 │   │   ├── analyze/       # Analysis API
-│   │   └── health/        # Health endpoint
+│   │   ├── health/        # Health endpoint
+│   │   └── sensors/       # Proxy to the local sensor agent's alerts
 │   ├── error.js           # Runtime error boundary
 │   ├── globals.css        # Application styling
 │   ├── layout.js          # Root layout and metadata
 │   └── page.js            # Main Shield workspace
+├── bin/
+│   └── vibex.js           # Unified launcher (npm run shield -- <command>)
+├── browser-extension/     # Browser Link Guard (Chrome / Edge, Manifest V3)
+├── sensor-agent/
+│   └── server.js          # Authenticated Factory Sensor Agent
 ├── lib/
-│   └── risk-engine.js     # Deterministic cyber-risk analysis
+│   ├── risk-engine.js     # Deterministic cyber-risk analysis
+│   └── sensor-guard.js    # Sensor limit and sudden-change rules
+├── scripts/
+│   └── code-guard.js      # Hard-coded credential scanner
 ├── tests/
-│   └── risk-engine.test.js
+│   ├── code-guard.test.js
+│   ├── risk-engine.test.js
+│   └── sensor-guard.test.js
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── AUTOMATIC_PROTECTION.md
 │   ├── BUILD_PLAN.md
+│   ├── PRODUCT_GUIDE.md
 │   └── SECURITY.md
+├── .github/workflows/     # CI (tests, Code Guard, lint, build) and release packaging
 ├── next.config.mjs        # Security headers
 ├── eslint.config.mjs
 ├── package.json
@@ -264,7 +284,9 @@ Product setup, operation and safety details are kept in `docs/`.
 
 | If you want to | Read |
 |---|---|
-| Install and run the complete product | [Product guide](docs/PRODUCT_GUIDE.md) |\n| Understand the architecture | [Architecture](docs/ARCHITECTURE.md) |\n| Install the browser and factory modules | [Automatic protection](docs/AUTOMATIC_PROTECTION.md) |
+| Install and run the complete product | [Product guide](docs/PRODUCT_GUIDE.md) |
+| Understand the architecture | [Architecture](docs/ARCHITECTURE.md) |
+| Install the browser and factory modules | [Automatic protection](docs/AUTOMATIC_PROTECTION.md) |
 | Review security boundaries | [Security](docs/SECURITY.md) |
 | See the phased roadmap | [Build plan](docs/BUILD_PLAN.md) |
 
