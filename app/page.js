@@ -475,7 +475,7 @@ export default function Home() {
             <code>npm run sensor:agent</code>
           </a>
         </div>
-        <p className="auto-note">Voice-clone verification and direct UPI-app interception require native call/audio or payment-app integration. VibeX flags UPI scam wording but does not claim to authenticate a caller's voice.</p>
+        <p className="auto-note">Voice-clone verification and direct UPI-app interception require native call/audio or payment-app integration. VibeX flags UPI scam wording but does not claim to authenticate a caller&apos;s voice.</p>
       </section>
 
       <section className="tool-section">
