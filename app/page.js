@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -234,10 +234,45 @@ export default function Home() {
   const [selectedFinding, setSelectedFinding] = useState(null);
   const [scanStep, setScanStep] = useState("");
   const [speechLanguage, setSpeechLanguage] = useState("en-IN");
+  const [sensorStatus, setSensorStatus] = useState({ online:false, reason:"loading", alerts:[], message:"Checking local sensor agent..." });
   const [notice, setNotice] = useState("");
   const fileInputRef = useRef(null);
 
   const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
+
+  useEffect(() => {
+    let disposed = false;
+    let checking = false;
+
+    const refreshSensorStatus = async () => {
+      if (checking) return;
+      checking = true;
+      try {
+        const response = await fetch("/api/sensors", { cache: "no-store" });
+        if (!response.ok) throw new Error("Sensor status unavailable.");
+        const data = await response.json();
+        if (!disposed) setSensorStatus(data);
+      } catch {
+        if (!disposed) setSensorStatus({
+          online:false,
+          reason:"unreachable",
+          alerts:[],
+          message:"Unable to read the local sensor agent status."
+        });
+      } finally {
+        checking = false;
+      }
+    };
+
+    refreshSensorStatus();
+    const timer = window.setInterval(refreshSensorStatus, 12000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+
 
   const analyze = async () => {
     if (!input.trim() || loading) return;
@@ -484,8 +519,8 @@ export default function Home() {
 
       <section className="auto-suite">
         <div className="section-title">
-          <div><span className="eyebrow">AUTOMATIC PROTECTION</span><h2>Protection beyond the dashboard.</h2></div>
-          <span className="section-note">Installable and CI-integrated modules</span>
+          <div><span className="eyebrow">AUTOMATIC PROTECTION</span><h2>One product. Multiple protection layers.</h2></div>
+          <span className="section-note">Unified local runtime · browser · CI · factory</span>
         </div>
         <div className="auto-grid">
           <a className="auto-card" href="https://github.com/aayush-as69/vibex/tree/main/browser-extension" target="_blank" rel="noreferrer">
@@ -498,10 +533,18 @@ export default function Home() {
             <p>Scans source and configuration files for exposed credentials and fails CI on high-confidence matches.</p>
             <code>npm run guard</code>
           </a>
-          <a className="auto-card" href="https://github.com/aayush-as69/vibex/blob/main/docs/AUTOMATIC_PROTECTION.md" target="_blank" rel="noreferrer">
+          <a className="auto-card sensor-product-card" href="https://github.com/aayush-as69/vibex/blob/main/docs/AUTOMATIC_PROTECTION.md" target="_blank" rel="noreferrer">
             <span className="auto-index">03 / FACTORY</span><b>Sensor Agent</b>
             <p>Accepts authenticated sensor telemetry and raises alerts for unsafe ranges or sudden changes.</p>
-            <code>npm run sensor:agent</code>
+            <span className={`sensor-connection ${sensorStatus.online ? "connected" : "disconnected"}`}>
+              <i /> {sensorStatus.online ? "CONNECTED" : sensorStatus.reason === "loading" ? "CHECKING" : sensorStatus.reason === "not_configured" ? "NOT CONFIGURED" : "OFFLINE"}
+            </span>
+            <span className="sensor-message">{sensorStatus.online
+              ? sensorStatus.alerts?.length
+                ? sensorStatus.alerts.length + " recent alert(s) · latest: " + sensorStatus.alerts[0].sensorId + " / " + sensorStatus.alerts[0].metric
+                : "Connected · no recent alerts"
+              : sensorStatus.message}</span>
+            <code>npm run shield -- up</code>
           </a>
         </div>
         <p className="auto-note">Voice-clone verification and direct UPI-app interception require native call/audio or payment-app integration. VibeX flags UPI scam wording but does not claim to authenticate a caller&apos;s voice.</p>
