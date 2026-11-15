@@ -3,10 +3,12 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "dev": "next dev",
+    "guard": "node scripts/code-guard.js",
     "lint": "eslint .",
+    "sensor:agent": "node sensor-agent/server.js",
+    "start": "next start",
     "test": "node --test"
   },
   "dependencies": {
