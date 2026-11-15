@@ -350,7 +350,7 @@ vibex/
 | System architecture | [Architecture](docs/ARCHITECTURE.md) |
 | Browser + factory protection | [Automatic Protection](docs/AUTOMATIC_PROTECTION.md) |
 | Security boundaries | [Security](docs/SECURITY.md) |
-| Development phases and roadmap | [Build Plan](docs/BUILD_PLAN.md) |
+| Development and planning notes | [Build Plan](docs/BUILD_PLAN.md) |
 
 The README provides the fast path. The <code>docs/</code> directory contains the deeper implementation and operational details.
 
@@ -397,51 +397,6 @@ Before production use at larger scale, the project should consider:
 - Dependency monitoring
 - Isolated URL reputation/fetching infrastructure if remote inspection is introduced
 - Additional privacy-aware telemetry controls
-
----
-
-## Roadmap
-
-### Phase 0 — Foundation
-- Product scope and defensive guardrails
-- Next.js application foundation
-- Initial architecture and documentation
-
-### Phase 1 — MVP
-- Link, message, and code analysis
-- Explainable findings and risk score
-- API validation
-- Demo examples and session history
-- Responsive interface
-- Automated tests
-
-### Phase 2 — Intelligence
-- URL reputation and redirect analysis
-- OCR for scam screenshots and QR-payment requests
-- Optional structured LLM classification
-- Confidence and evidence scoring
-- Hindi/English explanations
-- Threat-intelligence integration
-
-### Phase 3 — Protection
-- Browser/share-sheet workflows
-- Malicious-link warning experience
-- Evidence/report export
-- Rate limiting and abuse protection
-- Privacy-aware telemetry
-
-### Phase 4 — Advanced Safety
-- Voice-scam indicators
-- Repository secret/dependency scanning
-- Safer remediation workflows
-- Production security hardening
-
-### Phase 5 — Deployment & Submission
-- End-to-end testing
-- Accessibility review
-- Deployment validation
-- Judge/demo preparation
-- Architecture and threat-model documentation
 
 ---
 
