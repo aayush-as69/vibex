@@ -100,11 +100,13 @@ function inspectInput(input, type, findings) {
   return terms.filter(([,re]) => re.test(text)).map(([label,re]) => [label, text.match(re)?.[0] || "", "danger"]);
 }
 
-function InspectionView({ input, type, findings }) {
+function InspectionView({ input, type, findings, selectedFinding, onSelect }) {
   const rows = inspectInput(input, type, findings);
-  if (type === "code") return <div className="inspection code-inspection">{rows.map(([label, value, tone]) => <div className={`code-row ${tone}`} key={label}><span>{label}</span><code>{value}</code></div>)}</div>;
-  if (type === "url") return <div className="inspection url-inspection">{rows.map(([label, value, tone]) => <div className={`url-part ${tone}`} key={label}><span>{label}</span><b>{value}</b></div>)}</div>;
-  return <div className="inspection message-inspection">{rows.length ? rows.map(([label, value]) => <div className="highlight-chip" key={label}><span>{label}</span><b>{value}</b></div>) : <div className="highlight-clean">No recognized high-risk phrase was isolated.</div>}</div>;
+  const selectedText = String(selectedFinding?.evidence || "").toLowerCase();
+  const isSelected = (value) => selectedText && String(value).toLowerCase().includes(selectedText);
+  if (type === "code") return <div className="inspection code-inspection">{rows.map(([label, value, tone]) => <button className={`code-row ${tone} ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><code>{value}</code></button>)}</div>;
+  if (type === "url") return <div className="inspection url-inspection">{rows.map(([label, value, tone]) => <button className={`url-part ${tone} ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><b>{value}</b></button>)}</div>;
+  return <div className="inspection message-inspection">{rows.length ? rows.map(([label, value]) => <button className={`highlight-chip ${isSelected(value) ? "selected" : ""}`} key={label} onClick={() => onSelect(selectedFinding)}><span>{label}</span><b>{value}</b></button>) : <div className="highlight-clean">No recognized high-risk phrase was isolated.</div>}</div>;
 }
 
 function formatTime(value) {
@@ -319,7 +321,7 @@ export default function Home() {
         {error && <div className="error"><AlertTriangle size={17} /><span>{error}</span></div>}
 
         {result && (
-          <div className="analysis-overview">
+          <><div className="analysis-overview">
             <div className="overview-main">
               <div className="verdict-line">
                 <span className={`risk-badge ${levelTone(result.level)}`}>{result.level} RISK</span>
@@ -336,7 +338,7 @@ export default function Home() {
               return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: \`${Math.min(100, count * 34)}%\` }} /></i><em>{count}</em></div>;
             })}
           </div>
-          <div className="inspection-section"><div className="panel-heading"><div><span className="eyebrow">INPUT FORENSICS</span><h3>What the engine noticed</h3></div><span>Signal-level inspection</span></div><InspectionView input={input} type={tool} findings={result.findings} /></div>
+          <div className="inspection-section"><div className="panel-heading"><div><span className="eyebrow">INPUT FORENSICS</span><h3>What the engine noticed</h3></div><span>Signal-level inspection</span></div><InspectionView input={input} type={tool} findings={result.findings} selectedFinding={selectedFinding} onSelect={setSelectedFinding} /></div>
           <div className="result-panel">
             <div className="verdict">
               <div className="verdict-head">
@@ -376,6 +378,7 @@ export default function Home() {
               <div className="result-foot"><span>Checked {formatTime(result.checkedAt)}</span><span>Advisory only · verify through a trusted channel</span></div>
             </div>
           </div>
+          </>
         )}
       </section>
 
