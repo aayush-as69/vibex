@@ -77,6 +77,8 @@ const demoCases = [
 function redactSensitiveText(value) {
   return String(value || "")
     .replace(/((?:api[_-]?key|client[_-]?secret|access[_-]?token|password|secret|authorization)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1[REDACTED]")
+    .replace(/([?&](?:token|access_token|api_key|secret|password|otp|pin|cvv|auth|code)=)[^&#\s"'()]+/gi, "$1[REDACTED]")
+    .replace(/\b(otp|one[- ]time password|cvv|pin|mpin)\s*(?:is|[:=#-])?\s*\d{3,8}\b/gi, "$1 [REDACTED]")
     .replace(/\b(?:gh[pousr]_[A-Za-z0-9]{20,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|AKIA[0-9A-Z]{16})\b/g, "[REDACTED]")
     .replace(/\bBearer\s+[A-Za-z0-9._~+/-]{12,}/gi, "Bearer [REDACTED]")
     .replace(/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/gi, "[PRIVATE KEY REDACTED]");
