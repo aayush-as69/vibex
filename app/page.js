@@ -340,7 +340,7 @@ export default function Home() {
           <div className="signal-map">
             {["Social engineering","Credential theft","Impersonation","Link obfuscation","Transport security","Secret exposure","Code execution"].map((category) => {
               const count = signalCount(result, category);
-              return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: \`${Math.min(100, count * 34)}%\` }} /></i><em>{count}</em></div>;
+              return <div className={`signal-meter ${count ? "hit" : ""}`} key={category}><span>{category}</span><i><b style={{ width: `${Math.min(100, count * 34)}%` }} /></i><em>{count}</em></div>;
             })}
           </div>
           <div className="inspection-section"><div className="panel-heading"><div><span className="eyebrow">INPUT FORENSICS</span><h3>What the engine noticed</h3></div><span>Signal-level inspection</span></div><InspectionView input={input} type={tool} findings={result.findings} selectedFinding={selectedFinding} onSelect={setSelectedFinding} /></div>
