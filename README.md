@@ -86,11 +86,11 @@ It gives a user one place to inspect suspicious content, explains the signals th
 
 ```mermaid
 flowchart LR
-    U[Browser] --> UI[Next.js + React UI]
-    UI --> API[/api/analyze]
+    U[Browser] --> UI[Next.js and React UI]
+    UI --> API["Analyze API"]
     API --> V[Input Validation]
     V --> E[Deterministic Risk Engine]
-    E --> F[Findings + Score + Severity]
+    E --> F[Findings, Score, and Severity]
     F --> UI
 ```
 
