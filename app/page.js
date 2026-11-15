@@ -1,56 +1,341 @@
 "use client";
-import {useState} from "react";
-import {ShieldCheck,Link2,MessageSquareWarning,Code2,ArrowRight,Activity,LockKeyhole,CheckCircle2,AlertTriangle,RotateCcw} from "lucide-react";
 
-const tools=[
- {id:"url",icon:Link2,title:"Link Scanner",desc:"Inspect suspicious URLs before you open them.",placeholder:"Paste a suspicious URL…",sample:"http://secure-login.xyz/verify"},
- {id:"message",icon:MessageSquareWarning,title:"Scam Message Check",desc:"Analyze SMS, WhatsApp and payment messages.",placeholder:"Paste the suspicious message or payment request…",sample:"URGENT: Your bank account is blocked. Share OTP now to receive refund."},
- {id:"code",icon:Code2,title:"Code Guard",desc:"Find exposed secrets and risky patterns before deployment.",placeholder:"Paste a code snippet or config…",sample:"const API_KEY = secret; eval(userInput);"}
+import { useMemo, useState } from "react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  Code2,
+  Copy,
+  ExternalLink,
+  Fingerprint,
+  History,
+  Link2,
+  LockKeyhole,
+  MessageSquareWarning,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Zap,
+} from "lucide-react";
+
+const tools = [
+  {
+    id: "message",
+    icon: MessageSquareWarning,
+    eyebrow: "SOCIAL ENGINEERING",
+    title: "Scam Message",
+    desc: "Detect urgency, payment pressure, credential requests and impersonation.",
+    placeholder: "Paste an SMS, WhatsApp message, email or payment request…",
+    sample:
+      "URGENT: Your bank account is blocked. Share OTP now to receive refund. Click here within 10 minutes.",
+  },
+  {
+    id: "url",
+    icon: Link2,
+    eyebrow: "LINK INTELLIGENCE",
+    title: "Link Scanner",
+    desc: "Inspect destinations for obfuscation, risky domains and credential lures.",
+    placeholder: "Paste a suspicious URL…",
+    sample: "http://secure-login.xyz/verify-account?otp=required",
+  },
+  {
+    id: "code",
+    icon: Code2,
+    eyebrow: "DEVELOPER SECURITY",
+    title: "Code Guard",
+    desc: "Spot exposed secrets, unsafe execution and insecure transport patterns.",
+    placeholder: "Paste a code snippet, config or request…",
+    sample: "const API_KEY = 'sk_live_123'; eval(userInput); fetch('http://api.example.com');",
+  },
 ];
 
-export default function Home(){
- const [tool,setTool]=useState("message"),[input,setInput]=useState(""),[result,setResult]=useState(null),[loading,setLoading]=useState(false),[error,setError]=useState(""),[history,setHistory]=useState([]);
- const active=tools.find(x=>x.id===tool);
- const analyze=async()=>{
-  if(!input.trim())return;
-  setLoading(true);setError("");setResult(null);
-  try{
-   const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({type:tool,input})});
-   const data=await res.json();
-   if(!res.ok||!data.ok)throw new Error(data.error||"Analysis failed.");
-   setResult(data.result);setHistory(h=>[{type:tool,score:data.result.score,level:data.result.level,time:new Date(),preview:input.slice(0,64)},...h].slice(0,5));
-  }catch(e){setError(e.message);}finally{setLoading(false);}
- };
- const loadSample=()=>{setInput(active.sample);setResult(null);setError("");};
- return <main>
-  <header className="nav">
-   <div className="brand"><span className="mark"><ShieldCheck size={20}/></span><span>VibeX <b>Shield</b></span></div>
-   <div className="nav-right"><span className="status"><i/> Rules engine online</span><span className="secure"><LockKeyhole size={13}/> Local-first MVP</span></div>
-  </header>
-  <section className="hero">
-   <div className="eyebrow"><ShieldCheck size={15}/> VIBEX CODES / TRACK 3</div>
-   <h1>Pause. Check. <span>Stay safe.</span></h1>
-   <p>Understand suspicious links, scam messages and risky code before they become a problem.</p>
-   <div className="stats"><div><b>3</b><small>security checks</small></div><div><b>100</b><small>risk score</small></div><div><b>0</b><small>data stored by MVP</small></div></div>
-  </section>
-  <section className="grid">{tools.map(t=><button className={"card "+(tool===t.id?"active":"")} onClick={()=>{setTool(t.id);setResult(null);setError("");setInput("")}} key={t.id}>
-   <div className="icon"><t.icon size={21}/></div><h2>{t.title}</h2><p>{t.desc}</p><span className="card-arrow"><ArrowRight size={17}/></span>
-  </button>)}</section>
-  <section className="workspace">
-   <div className="workhead"><div><span className="eyebrow">LIVE ANALYSIS</span><h2>{active.title}</h2></div><span className="pill"><Activity size={14}/> {loading?"Scanning":"Ready"}</span></div>
-   <div className="sample-row"><button onClick={loadSample}>Load demo example</button><span>Try the built-in scenario for the fastest demo.</span></div>
-   <textarea maxLength={5000} value={input} onChange={e=>setInput(e.target.value)} placeholder={active.placeholder}/>
-   <div className="composer-foot"><span>{input.length}/5,000 characters</span><button className="analyze" disabled={loading||!input.trim()} onClick={analyze}>{loading?"Analyzing…":"Analyze risk"} <ArrowRight size={18}/></button></div>
-   {error&&<div className="error"><AlertTriangle size={17}/><span>{error}</span></div>}
-   {result&&<div className="result">
-    <div className="score"><span>Risk score</span><b className={result.level.toLowerCase()}>{result.score}</b><strong>{result.level} RISK</strong><small>{result.engine}</small></div>
-    <div className="signals"><h3>Why this was flagged</h3>{result.findings.length?result.findings.map((f,i)=><div className="finding" key={i}><AlertTriangle size={15}/><div><b>{f.signal}</b><p>{f.evidence}</p></div></div>):<div className="finding safe"><CheckCircle2 size={15}/><div><b>No obvious high-risk pattern</b><p>The rules engine did not detect a known warning signal.</p></div></div>}
-     <div className="actions"><h4>Recommended next steps</h4>{result.recommendations.map((x,i)=><p key={i}>• {x}</p>)}</div>
-     <small className="disclaimer">Advisory result. Verify important requests through a trusted channel before acting.</small>
-    </div>
-   </div>}
-  </section>
-  {history.length>0&&<section className="history"><div className="section-head"><div><span className="eyebrow">SESSION ACTIVITY</span><h2>Recent checks</h2></div><button onClick={()=>setHistory([])}><RotateCcw size={14}/> Clear</button></div><div className="history-list">{history.map((h,i)=><div className="history-item" key={i}><span className={"mini "+h.level.toLowerCase()}>{h.score}</span><div><b>{tools.find(t=>t.id===h.type)?.title}</b><p>{h.preview}{h.preview.length===64?"…":""}</p></div><time>{h.time.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time></div>)}</div></section>}
-  <footer><span>VibeX Shield · Defensive security tooling</span><span><LockKeyhole size={14}/> No submitted content is persisted by the MVP</span></footer>
- </main>
+const demoCases = [
+  {
+    label: "Fake bank alert",
+    type: "message",
+    input:
+      "URGENT: Your bank account is blocked. Share OTP now to receive refund. Click here within 10 minutes.",
+  },
+  {
+    label: "Suspicious login",
+    type: "url",
+    input: "http://secure-login.xyz/verify-account?otp=required",
+  },
+  {
+    label: "Leaked secret",
+    type: "code",
+    input: "const API_KEY = 'sk_live_123'; eval(userInput); fetch('http://api.example.com');",
+  },
+];
+
+function formatTime(value) {
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function levelTone(level) {
+  return String(level || "LOW").toLowerCase();
+}
+
+export default function Home() {
+  const [tool, setTool] = useState("message");
+  const [input, setInput] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [history, setHistory] = useState([]);
+
+  const active = useMemo(() => tools.find((item) => item.id === tool), [tool]);
+
+  const analyze = async () => {
+    if (!input.trim() || loading) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ type: tool, input }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Analysis failed.");
+
+      setResult(data.result);
+      setHistory((items) => [
+        {
+          id: crypto.randomUUID(),
+          type: tool,
+          score: data.result.score,
+          level: data.result.level,
+          time: data.result.checkedAt,
+          preview: input.slice(0, 72),
+        },
+        ...items,
+      ].slice(0, 6));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectTool = (id) => {
+    setTool(id);
+    setInput("");
+    setResult(null);
+    setError("");
+  };
+
+  const loadSample = () => {
+    setInput(active.sample);
+    setResult(null);
+    setError("");
+  };
+
+  const loadCase = (item) => {
+    setTool(item.type);
+    setInput(item.input);
+    setResult(null);
+    setError("");
+    window.scrollTo({ top: document.querySelector(".workspace")?.offsetTop || 0, behavior: "smooth" });
+  };
+
+  const reset = () => {
+    setInput("");
+    setResult(null);
+    setError("");
+  };
+
+  const copyResult = async () => {
+    if (!result) return;
+    const text = [
+      `VibeX Shield — ${result.level} risk (${result.score}/100)`,
+      ...result.findings.map((f) => `• ${f.signal}: ${f.evidence}`),
+      "",
+      ...result.recommendations.map((r) => `→ ${r}`),
+    ].join("\n");
+    await navigator.clipboard?.writeText(text);
+  };
+
+  return (
+    <main>
+      <header className="nav">
+        <a className="brand" href="#" aria-label="VibeX Shield home">
+          <span className="mark"><ShieldCheck size={19} /></span>
+          <span>VibeX <b>Shield</b></span>
+        </a>
+        <div className="nav-right">
+          <span className="status"><i /> Threat engine online</span>
+          <span className="secure"><LockKeyhole size={13} /> Local-first</span>
+        </div>
+      </header>
+
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="eyebrow"><Sparkles size={14} /> VIBEX CODES · CYBER SAFETY</div>
+          <h1>Don&apos;t trust it.<br /><span>Check it first.</span></h1>
+          <p>
+            A fast defensive workspace for suspicious links, scam messages and risky code.
+            Get a human-readable risk signal before you click, pay, share or run.
+          </p>
+          <div className="hero-actions">
+            <button className="primary-ghost" onClick={() => document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth" })}>
+              Start a security check <ArrowRight size={16} />
+            </button>
+            <span><Zap size={14} /> No account · No upload · No stored input</span>
+          </div>
+        </div>
+
+        <div className="hero-orbit" aria-hidden="true">
+          <div className="orbit orbit-a" />
+          <div className="orbit orbit-b" />
+          <div className="core">
+            <ShieldCheck size={32} />
+            <b>SAFE</b>
+            <span>BY DEFAULT</span>
+          </div>
+          <div className="orbit-chip chip-a">URL</div>
+          <div className="orbit-chip chip-b">MSG</div>
+          <div className="orbit-chip chip-c">CODE</div>
+        </div>
+      </section>
+
+      <section className="metrics">
+        <div><span className="metric-icon"><Fingerprint size={15} /></span><div><b>3</b><small>attack surfaces</small></div></div>
+        <div><span className="metric-icon"><Activity size={15} /></span><div><b>100</b><small>risk points</small></div></div>
+        <div><span className="metric-icon"><LockKeyhole size={15} /></span><div><b>0</b><small>stored submissions</small></div></div>
+        <div className="engine"><i /> <span>Rules engine v1 · deterministic · explainable</span></div>
+      </section>
+
+      <section className="tool-section">
+        <div className="section-title">
+          <div><span className="eyebrow">SECURITY WORKSPACE</span><h2>Choose what you want to inspect.</h2></div>
+          <span className="section-note">Built for citizens, developers & teams</span>
+        </div>
+
+        <div className="tool-grid">
+          {tools.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button className={`tool-card ${tool === item.id ? "selected" : ""}`} onClick={() => selectTool(item.id)} key={item.id}>
+                <div className="tool-top"><span className="tool-icon"><Icon size={19} /></span><ChevronRight size={17} /></div>
+                <span className="tool-eyebrow">{item.eyebrow}</span>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+                <span className="tool-link">Open scanner <ArrowRight size={14} /></span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="workspace">
+        <div className="workspace-bar">
+          <div className="workspace-title">
+            <div className="live-dot"><i /></div>
+            <div><span className="eyebrow">ACTIVE CHECK</span><h2>{active.title}</h2></div>
+          </div>
+          <div className="workspace-meta"><span><Activity size={13} /> {loading ? "Analyzing" : "Ready"}</span><span>Max 5,000 chars</span></div>
+        </div>
+
+        <div className="scenario-row">
+          <span>Quick demo</span>
+          {demoCases.map((item) => (
+            <button key={item.label} onClick={() => loadCase(item)}>{item.label}</button>
+          ))}
+        </div>
+
+        <div className="composer">
+          <div className="composer-label"><Terminal size={14} /> INPUT PAYLOAD <span>{input.length}/5,000</span></div>
+          <textarea
+            maxLength={5000}
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setResult(null); }}
+            placeholder={active.placeholder}
+          />
+          <div className="composer-foot">
+            <button className="sample" onClick={loadSample}>Load example</button>
+            <div className="composer-right">
+              {input && <button className="reset" onClick={reset}>Clear</button>}
+              <button className="analyze" disabled={loading || !input.trim()} onClick={analyze}>
+                {loading ? "Running checks…" : "Analyze threat"} <ArrowRight size={17} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {error && <div className="error"><AlertTriangle size={17} /><span>{error}</span></div>}
+
+        {result && (
+          <div className="result-panel">
+            <div className="verdict">
+              <div className="verdict-head">
+                <span className="eyebrow">ANALYSIS COMPLETE</span>
+                <button className="icon-btn" onClick={copyResult} title="Copy result"><Copy size={15} /></button>
+              </div>
+              <div className="score-ring-wrap">
+                <div className={`score-ring ${levelTone(result.level)}`}>
+                  <div><b>{result.score}</b><span>/100</span></div>
+                </div>
+                <div>
+                  <span className={`risk-badge ${levelTone(result.level)}`}>{result.level} RISK</span>
+                  <h3>{result.level === "HIGH" ? "Stop before you act." : result.level === "MEDIUM" ? "Pause and verify." : "No obvious red flags."}</h3>
+                  <p>Assessment from {result.engine}. The score is a defensive signal, not a guarantee of safety.</p>
+                </div>
+              </div>
+              <div className="score-scale"><span>LOW</span><i /><span>MEDIUM</span><i /><span>HIGH</span></div>
+            </div>
+
+            <div className="evidence">
+              <div className="panel-heading"><div><span className="eyebrow">EVIDENCE</span><h3>Why this was flagged</h3></div><span>{result.findings.length} signals</span></div>
+              {result.findings.length ? result.findings.map((f, index) => (
+                <div className="evidence-card" key={f.signal}>
+                  <div className={`evidence-number ${levelTone(result.level)}`}>{String(index + 1).padStart(2, "0")}</div>
+                  <div><b>{f.signal}</b><p>{f.evidence}</p></div>
+                  <span className="weight">+{f.weight}</span>
+                </div>
+              )) : (
+                <div className="clean-state"><CheckCircle2 size={20} /><div><b>No obvious high-risk pattern detected</b><p>The current rules did not match a known warning signal.</p></div></div>
+              )}
+
+              <div className="next-steps">
+                <div className="next-icon"><ShieldCheck size={17} /></div>
+                <div><span className="eyebrow">WHAT TO DO NEXT</span>{result.recommendations.map((item, index) => <p key={index}><span>{index + 1}</span>{item}</p>)}</div>
+              </div>
+
+              <div className="result-foot"><span>Checked {formatTime(result.checkedAt)}</span><span>Advisory only · verify through a trusted channel</span></div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {history.length > 0 && (
+        <section className="history">
+          <div className="section-title compact">
+            <div><span className="eyebrow"><History size={13} /> SESSION MEMORY</span><h2>Recent checks</h2></div>
+            <button className="clear-history" onClick={() => setHistory([])}><RotateCcw size={13} /> Clear</button>
+          </div>
+          <div className="history-grid">
+            {history.map((item) => (
+              <button className="history-item" key={item.id} onClick={() => { setTool(item.type); setInput(item.preview); setResult(null); }}>
+                <span className={`history-score ${levelTone(item.level)}`}>{item.score}</span>
+                <span><b>{tools.find((x) => x.id === item.type)?.title}</b><small>{item.preview}</small></span>
+                <time>{formatTime(item.time)}</time>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="trust-strip">
+        <div><ShieldCheck size={20} /><div><b>Defensive by design</b><span>VibeX Shield analyzes text locally through deterministic rules and does not execute submitted code.</span></div></div>
+        <div><ExternalLink size={16} /><span>Never treat a green result as proof that something is safe.</span></div>
+      </section>
+
+      <footer><span>VibeX Shield · Cyber Safety Track</span><span>Pause before you click, pay, share or run.</span></footer>
+    </main>
+  );
 }
