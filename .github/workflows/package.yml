@@ -3,6 +3,7 @@ name: Package VibeX Shield
 on:
   workflow_dispatch:
   push:
+    branches: ["main"]
     tags:
       - "v*"
 
@@ -30,6 +31,7 @@ jobs:
           npm run guard
           npm run lint
           npm run build
+          npm run shield -- doctor
 
       - name: Create source product ZIP
         run: |
