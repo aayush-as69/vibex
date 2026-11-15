@@ -237,7 +237,7 @@ export default function Home() {
       setResult(null);
       setSelectedFinding(null);
       setError("");
-      setNotice(file.name + " imported in this browser. The file itself is not uploaded or saved.");
+      setNotice(file.name + " read in this browser. Its text is sent only to this app when you analyze; the app does not save it.");
     } catch (importError) {
       setError(importError.message || "Unable to read this text file.");
     } finally {
@@ -322,7 +322,7 @@ export default function Home() {
         </a>
         <div className="nav-right">
           <span className="status"><i /> Threat engine online</span>
-          <span className="secure"><LockKeyhole size={13} /> Local-first</span>
+          <span className="secure"><LockKeyhole size={13} /> No third-party APIs</span>
         </div>
       </header>
 
@@ -338,7 +338,7 @@ export default function Home() {
             <button type="button" className="primary-ghost" onClick={() => document.querySelector(".workspace")?.scrollIntoView({ behavior: "smooth" })}>
               Start a security check <ArrowRight size={16} />
             </button>
-            <span><Zap size={14} /> No account · No upload · No stored input</span>
+            <span><Zap size={14} /> No account · No third-party APIs · No saved input</span>
           </div>
         </div>
 
@@ -360,7 +360,7 @@ export default function Home() {
         <div><span className="metric-icon"><Fingerprint size={15} /></span><div><b>3</b><small>attack surfaces</small></div></div>
         <div><span className="metric-icon"><Activity size={15} /></span><div><b>100</b><small>risk points</small></div></div>
         <div><span className="metric-icon"><LockKeyhole size={15} /></span><div><b>0</b><small>stored submissions</small></div></div>
-        <div className="engine"><i /> <span>Rules engine v1 · deterministic · explainable</span></div>
+        <div className="engine"><i /> <span>Rules engine v2 · deterministic · explainable</span></div>
       </section>
 
       <section className="tool-section">
@@ -407,7 +407,7 @@ export default function Home() {
           <textarea
             maxLength={5000}
             value={input}
-            onChange={(e) => { setInput(e.target.value); setResult(null); }}
+            onChange={(e) => { setInput(e.target.value); setResult(null); setSelectedFinding(null); setError(""); setNotice(""); }}
             placeholder={active.placeholder}
           />
           <div className="composer-foot">
