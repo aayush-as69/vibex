@@ -88,7 +88,7 @@ function inspectInput(input, type, findings) {
     }
   }
   if (type === "code") {
-    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:\/\/.test(line)) ? "danger" : "neutral"]);
+    return text.split("\n").map((line, i) => [String(i + 1).padStart(2, "0"), line || " ", findings.some((f) => /dangerous|credential|secret|http/i.test(f.signal) && /eval|exec|key|token|secret|password|http:\/\//.test(line)) ? "danger" : "neutral"]);
   }
   const terms = [
     ["URGENT / PRESSURE", /urgent|immediately|within \d+|act now|expires/i],
