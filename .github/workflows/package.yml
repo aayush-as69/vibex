@@ -7,7 +7,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   package:
@@ -24,23 +24,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Verify product
+      - name: Verify complete product
         run: |
           npm test
           npm run guard
           npm run lint
           npm run build
 
-      - name: Create product archive
+      - name: Create source product ZIP
         run: |
           mkdir -p dist
-          zip -r "dist/VibeX-Shield-\${GITHUB_SHA::7}.zip" . \
-            -x ".git/*" "node_modules/*" ".next/*" ".vercel/*" "dist/*" "coverage/*"
+          git archive --format=zip --output=dist/VibeX-Shield-${GITHUB_SHA::7}.zip HEAD
 
       - name: Upload product ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: VibeX-Shield-\${{ github.sha }}
+          name: VibeX-Shield-${{ github.sha }}
           path: dist/VibeX-Shield-*.zip
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/VibeX-Shield-*.zip
